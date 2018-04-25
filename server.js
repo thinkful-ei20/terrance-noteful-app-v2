@@ -7,7 +7,7 @@ const { PORT } = require('./config');
 
 const notesRouter = require('./routes/notes.router');
 
-const folderRouter = require('./routers/folders.router');
+const folderRouter = require('./routes/folders.router');
 
 // Create an Express application
 const app = express();
