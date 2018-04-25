@@ -16,13 +16,6 @@ const knex = require('../knex');
 router.get('/notes', (req, res, next) => {
   const { searchTerm } = req.query;
 
-  // notes.filter(searchTerm)
-  //   .then(list => {
-  //     res.json(list);
-  //   })
-  //   .catch(err => {
-  //     next(err);
-  //   });
   knex.select('notes.id', 'title', 'content')
     .from('notes')
     .modify( (queryBuilder) => {
@@ -41,17 +34,6 @@ router.get('/notes', (req, res, next) => {
 router.get('/notes/:id', (req, res, next) => {
   const id = req.params.id;
 
-  // notes.find(id)
-  //   .then(item => {
-  //     if (item) {
-  //       res.json(item);
-  //     } else {
-  //       next();
-  //     }
-  //   })
-  //   .catch(err => {
-  //     next(err);
-  //   });
   knex
     .select()
     .from('notes')
@@ -85,17 +67,6 @@ router.put('/notes/:id', (req, res, next) => {
     return next(err);
   }
 
-  // notes.update(id, updateObj)
-  //   .then(item => {
-  //     if (item) {
-  //       res.json(item);
-  //     } else {
-  //       next();
-  //     }
-  //   })
-  //   .catch(err => {
-  //     next(err);
-  //   });
   knex
     .update(updateObj)
     .from('notes')
@@ -121,16 +92,6 @@ router.post('/notes', (req, res, next) => {
     return next(err);
   }
 
-  // notes.create(newItem)
-  //   .then(item => {
-  //     if (item) {
-  //       res.location(`http://${req.headers.host}/notes/${item.id}`).status(201).json(item);
-  //     }
-  //   })
-  //   .catch(err => {
-  //     next(err);
-  //   });
-
   knex
     .insert(newItem)
     .from('notes')
@@ -147,13 +108,6 @@ router.post('/notes', (req, res, next) => {
 router.delete('/notes/:id', (req, res, next) => {
   const id = req.params.id;
 
-  // notes.delete(id)
-  //   .then(() => {
-  //     res.sendStatus(204);
-  //   })
-  //   .catch(err => {
-  //     next(err);
-  //   });
   knex
     .from('notes')
     .where('id', id)

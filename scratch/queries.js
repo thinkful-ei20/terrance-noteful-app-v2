@@ -74,3 +74,6 @@ const knex = require('../knex');
 // knex
 //   .where('id', id)
 //   .del();
+
+// THIS IS WHERE THE CODE FOR TABLE FOLDERS BEGINS
+
