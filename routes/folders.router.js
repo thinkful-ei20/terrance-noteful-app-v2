@@ -67,4 +67,44 @@ router.put('/folders/:id', (req, res, next) => {
     });
 });
 
+// Post (insert) a folder
+router.post('/folders', (req, res, next) => {
+  const { name } = req.body;
+
+  const newItem = { name };
+  /***** Never trust users - validate input *****/
+  if (!newItem.name) {
+    const err = new Error('Missing `name` in request body');
+    err.status = 400;
+    return next(err);
+  }
+
+  knex
+    .insert(newItem)
+    .from('folders')
+    .returning(['id', 'name'])
+    .then( (results) => {
+      res.status(201).json(results[0]);
+    })
+    .catch( (err) => {
+      next(err);
+    });
+});
+
+// Delete an item
+router.delete('/folders/:id', (req, res, next) => {
+  const id = req.params.id;
+
+  knex
+    .from('folders')
+    .where('id', id)
+    .del()
+    .then( () => {
+      res.sendStatus(204);
+    })
+    .catch( (err) => {
+      next(err);
+    });
+});
+
 module.exports = router;
