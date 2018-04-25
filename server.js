@@ -7,6 +7,8 @@ const { PORT } = require('./config');
 
 const notesRouter = require('./routes/notes.router');
 
+const folderRouter = require('./routers/folders.router');
+
 // Create an Express application
 const app = express();
 
@@ -23,6 +25,9 @@ app.use(express.json());
 
 // Mount router on "/api"
 app.use('/api', notesRouter);
+
+// Mount folder router on api
+app.use('/api', folderRouter);
 
 // Catch-all 404
 app.use(function (req, res, next) {
