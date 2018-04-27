@@ -9,13 +9,13 @@ function hydrateNotes(input) {
       hydrated.push(lookup[note.id]);
     }
 
-    if (note.tag_id && note.tagName) {
+    if (note.tagId && note.tagName) {
       lookup[note.id].tags.push({
-        id: note.tag_id,
+        id: note.tagId,
         name: note.tagName
       });
     }
-    delete lookup[note.id].tag_id;
+    delete lookup[note.id].tagId;
     delete lookup[note.id].tagName;
   }
   return hydrated;

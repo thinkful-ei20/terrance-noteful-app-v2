@@ -19,10 +19,10 @@ router.get('/notes', (req, res, next) => {
   const { folderId } = req.query;
   const { tagId } = req.query; 
 
-  knex.select('notes.id', 'title', 'content', 'folders.id as folder_id', 'folders.name as folderName', 'note_id', 'tags.id as tagId', 'tags.name as tagName')
+  knex.select('notes.id', 'title', 'content', 'folder_id as folders.id', 'folders.name as folderName', 'note_id', 'tags.id as tagId', 'tags.name as tagName')
     .from('notes')
     .leftJoin('folders', 'notes.folder_id', 'folders.id')
-    .leftJoin('notes_tags','notes_tags.note_id', 'notes.id')
+    .leftJoin('notes_tags','notes.id', 'notes_tags.note_id' )
     .leftJoin('tags', 'tags.id', 'notes_tags.tag_id')
     .modify( (queryBuilder) => {
       if (searchTerm) {
@@ -49,18 +49,18 @@ router.get('/notes', (req, res, next) => {
 
 // Get a single item
 router.get('/notes/:id', (req, res, next) => {
-  const id = req.params.id;
+  const noteId = req.params.id;
 
   knex
-    .select('notes.id', 'title', 'content', 'folders.id as folder_id', 'folders.name as folderName', 'tags.id as tagId', 'tags.name as tagName')
+    .select('notes.id', 'title', 'content', 'folder_id as folders.id', 'folders.name as folderName', 'tags.id as tagId', 'tags.name as tagName')
     .from('notes')
     .leftJoin('folders', 'notes.folder_id', 'folders.id')
-    .leftJoin('notes_tags','notes_tags.note_id', 'notes.id')
+    .leftJoin('notes_tags', 'notes.id', 'notes_tags.note_id')
     .leftJoin('tags', 'tags.id', 'notes_tags.tag_id')
-    .where('notes.id', id)
-    .then( (results) => {
-      if (results) {
-        const hydrated = hydrateNotes(results);
+    .where('notes.id', noteId)
+    .then( (result) => {
+      if (result) {
+        const hydrated = hydrateNotes(result);
         res.json(hydrated[0]);
       } else {
         next();
@@ -123,7 +123,13 @@ router.put('/notes/:id', (req, res, next) => {
 
 // Post (insert) an item
 router.post('/notes', (req, res, next) => {
-  const { title, content, folderId, tags } = req.body;
+  const { title, content, folderId, tags = [] } = req.body;
+
+  const newItem = { 
+    title,
+    content,
+    folder_id: (folderId) ? folderId : null
+  };
 
   /***** Never trust users - validate input *****/
   if (!newItem.title) {
@@ -131,12 +137,6 @@ router.post('/notes', (req, res, next) => {
     err.status = 400;
     return next(err);
   }
-
-  const newItem = { 
-    title,
-    content,
-    folder_id: (folderId) ? folderId : null
-  };
 
   let noteId;
   knex

@@ -2,7 +2,7 @@
 'use strict';
 
 const store = (function () {
-
+  
   return {
     notes: [],
     folders: [],

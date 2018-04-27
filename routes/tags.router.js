@@ -7,37 +7,27 @@ const router = express.Router();
 
 /* ========== GET ALL TAGS ========== */
 router.get('/tags', (req, res, next) => {
-  const { searchTerm } = req.query;
-
-  knex
-    .select()
+  knex.select('id', 'name')
     .from('tags')
-    .returning('name', 'id')
-    .modify( (queryBuilder) => {
-      if (searchTerm) {
-        queryBuilder.where('name', 'like', `%${searchTerm}%`);
-      }
-    })
-    .then( (result) => {
-      res.location(`${req.originalUrl}/${result.id}`).status(200).json(result);
+    .then(results => {
+      res.json(results);
     })
     .catch(err => next(err));
 });
 
 /* ========== GET TAG BY ID ========== */
 router.get('/tags/:id', (req, res, next) => {
-  const id = req.params.id;
-
-  knex
-    .select()
+  knex.first('id', 'name')
+    .where('id', req.params.id)
     .from('tags')
-    .where('id', id)
-    .then( (results) => {
-      res.json(results[0]);
+    .then(result => {
+      if (result) {
+        res.json(result);
+      } else {
+        next();
+      }
     })
-    .catch( (err) => {
-      next(err);
-    });
+    .catch(err => next(err));
 });
 
 /* ========== POST/CREATE TAG ========== */
@@ -90,8 +80,8 @@ router.put('/tags/:id', (req, res, next) => {
     .from('tags')
     .where('id', id)
     .returning(['id', 'name'])
-    .then( (results) => {
-      res.json(results[0]);
+    .then( ([results]) => {
+      res.json(results);
     })
     .catch( (err) => {
       next(err);
