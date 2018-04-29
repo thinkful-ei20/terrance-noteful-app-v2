@@ -131,14 +131,6 @@ describe('Noteful App', function () {
     });
 
     it('should return an empty array for an incorrect query', function () {
-      // return chai.request(app)
-      //   .get('/api/notes?searchTerm=Not%20a%20Valid%20Search')
-      //   .then(function (res) {
-      //     expect(res).to.have.status(200);
-      //     expect(res).to.be.json;
-      //     expect(res.body).to.be.a('array');
-      //     expect(res.body).to.have.length(0);
-      //   });
       let res;
       return chai.request(app)
         .get('/api/notes?searchTerm=Not%20a%20Valid%20Search')
@@ -154,6 +146,86 @@ describe('Noteful App', function () {
           expect(res.body).to.have.length(count);
         });
     });
+  });
+
+  describe('GET /api/folders', function() {
+
+    it('should return the default count of folders', function() {
+      let count;
+      return knex.count()
+        .from('folders')
+        .then( ([result]) => {
+          count = Number(result.count);
+          return chai.request(app).get('/api/folders');
+        })
+        .then(function (res) {
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body).to.be.an('array');
+          expect(res.body).to.have.length(count);
+        });
+    });
+
+    it('should return a list with the correct right fields', function () {
+      let res;
+      return chai.request(app)
+        .get('/api/folders')
+        .then(function (_res) {
+          res = _res;
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body).to.be.a('array');
+          return knex('folders').select();
+        })
+        .then( (data) => {
+          expect(res.body).to.have.length(data.length);
+          for (let i = 0; i < data.length; i++) {
+            expect(res.body[i].id).to.equal(data[i].id);
+            expect(res.body[i].name).to.equal(data[i].name);
+          }
+        });
+    });
+
+  });
+
+  describe('GET /api/tags', function() {
+
+    it('should return the default count of tags', function() {
+      let count;
+      return knex.count()
+        .from('tags')
+        .then( ([result]) => {
+          count = Number(result.count);
+          return chai.request(app).get('/api/tags');
+        })
+        .then(function (res) {
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body).to.be.an('array');
+          expect(res.body).to.have.length(count);
+        });
+    });
+
+    it('should return a list with the correct right fields', function () {
+      let res;
+      return chai.request(app)
+        .get('/api/tags')
+        .then(function (_res) {
+          res = _res;
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body).to.be.a('array');
+          return knex('tags').select();
+        })
+        .then( (data) => {
+          expect(res.body).to.have.length(data.length);
+          for (let i = 0; i < data.length; i++) {
+            expect(res.body[i].id).to.equal(data[i].id);
+            expect(res.body[i].name).to.equal(data[i].name);
+          }
+        });
+    });
+
   });
 
   describe('GET /api/notes/:id', function () {
@@ -323,7 +395,7 @@ describe('Noteful App', function () {
 
   });
 
-  describe.only('DELETE  /api/notes/:id', function () {
+  describe('DELETE  /api/notes/:id', function () {
 
     it('should delete an item by id', function () {
 
