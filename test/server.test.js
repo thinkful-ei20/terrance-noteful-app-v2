@@ -264,6 +264,78 @@ describe('Noteful App', function () {
 
   });
 
+  describe('GET /api/folders/:id', function () {
+
+    it('should return correct folders', function () {
+
+      const dataPromise = knex.first()
+        .from('folders')
+        .where('id', 100);
+
+      const apiPromise = chai.request(app)
+        .get('/api/folders/100');
+
+      return Promise.all([dataPromise, apiPromise])
+        .then(function ([data, res]) {
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body).to.be.an('object');
+          expect(res.body).to.include.keys('id', 'name');
+          expect(res.body.id).to.equal(100);
+          expect(res.body.name).to.equal(data.name);
+        });
+    });
+
+    it('should respond with a 404 for an invalid id', function () {
+      return chai.request(app)
+        .get('/DOES/NOT/EXIST')
+        .then(res => {
+          expect(res).to.have.status(404);
+          return knex('folders').select().where('id', '99999999');
+        })
+        .then( (data) => {
+          expect(data.length).to.equal(0);
+        });
+    });
+
+  });
+
+  describe('GET /api/tags/:id', function () {
+
+    it('should return correct tags', function () {
+
+      const dataPromise = knex.first()
+        .from('tags')
+        .where('id', 1);
+
+      const apiPromise = chai.request(app)
+        .get('/api/tags/1');
+
+      return Promise.all([dataPromise, apiPromise])
+        .then(function ([data, res]) {
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body).to.be.an('object');
+          expect(res.body).to.include.keys('id', 'name');
+          expect(res.body.id).to.equal(1);
+          expect(res.body.name).to.equal(data.name);
+        });
+    });
+
+    it('should respond with a 404 for an invalid id', function () {
+      return chai.request(app)
+        .get('/DOES/NOT/EXIST')
+        .then(res => {
+          expect(res).to.have.status(404);
+          return knex('tags').select().where('id', '99999999');
+        })
+        .then( (data) => {
+          expect(data.length).to.equal(0);
+        });
+    });
+
+  });
+
   describe('POST /api/notes', function () {
 
     it('should create and return a new item when provided valid data', function () {
