@@ -497,35 +497,29 @@ describe('Noteful App', function () {
   describe('PUT /api/notes/:id', function () {
 
     it('should update the note', function () {
+      let id = 1000;
       const updateItem = {
         'title': 'What about dogs?!',
-        'content': 'woof woof',
-        'folderId': 100
+        'content': 'woof woof'
       };
-
-      let res;
+      let body;
       return chai.request(app)
-        .put('/api/notes/1005')
+        .put(`/api/notes/${id}`)
         .send(updateItem)
-        .then(function (_res) {
-          res = _res;
-          updateItem.folder_id = updateItem.folderId;
-          delete updateItem.folderId;
+        .then(res => {
+          body = res.body;
           expect(res).to.have.status(200);
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
-          expect(res.body).to.include.keys('id', 'title', 'content', 'folder_id', 'folderName', 'tags');
-          return knex
-            .update(updateItem)
-            .from('notes')
-            .where('id', 1005)
-            .returning(['id', 'title', 'content', 'folder_id']);
+          expect(res.body).to.include.keys('id', 'title', 'content');
+          expect(res.body.id).to.equal(id);
+          expect(res.body.title).to.equal(updateItem.title);
+          expect(res.body.content).to.equal(updateItem.content);
+          return knex('notes').where({'notes.id': res.body.id});
         })
-        .then( ([data]) => {
-          expect(res.body.id).to.equal(1005);
-          expect(res.body.title).to.equal(data.title);
-          expect(res.body.content).to.equal(data.content);
-          expect(res.body.folder_id).to.equal(data.folder_id);
+        .then(([res])=> {
+          expect(res.title).to.equal(body.title);
+          expect(res.content).to.equal(body.content);
         });
     });
 
@@ -559,6 +553,75 @@ describe('Noteful App', function () {
           expect(res.body).to.be.a('object');
           expect(res.body.message).to.equal('Missing `title` in request body');
           return knex('notes')
+            .insert(updateItem)
+            .catch( (err) => {
+              return err;
+            });
+        })
+        .then( (err) => {
+          expect(err).to.include({name: 'error'});
+        });
+    });
+
+  });
+
+  describe('PUT /api/folders/:id', function () {
+
+    it('should update the folder', function () {
+      let id = 100;
+      const updateItem = {
+        'name': 'this is a new folder name'
+      };
+      let body;
+      return chai.request(app)
+        .put(`/api/folders/${id}`)
+        .send(updateItem)
+        .then(res => {
+          body = res.body;
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body).to.be.a('object');
+          expect(res.body).to.include.keys('id', 'name');
+          expect(res.body.id).to.equal(id);
+          expect(res.body.title).to.equal(updateItem.title);
+          expect(res.body.content).to.equal(updateItem.content);
+          return knex('folders').where({'folders.id': res.body.id});
+        })
+        .then(([res])=> {
+          expect(res.title).to.equal(body.title);
+          expect(res.content).to.equal(body.content);
+        });
+    });
+
+    it('should respond with a 404 for an invalid id', function () {
+      const updateItem = {
+        'name': 'new folder name'
+      };
+      return chai.request(app)
+        .put('/DOES/NOT/EXIST')
+        .send(updateItem)
+        .then(res => {
+          expect(res).to.have.status(404);
+          return knex.update(updateItem).from('folders').where('id', '999999999');
+        })
+        .then( (count) => {
+          expect(count).to.equal(0);
+        });
+    });
+
+    it('should return an error when missing "name" field', function () {
+      const updateItem = {
+        'foo': 'bar'
+      };
+      return chai.request(app)
+        .put('/api/folders/102')
+        .send(updateItem)
+        .then(res => {
+          expect(res).to.have.status(400);
+          expect(res).to.be.json;
+          expect(res.body).to.be.a('object');
+          expect(res.body.message).to.equal('Missing `name` in request body');
+          return knex('folders')
             .insert(updateItem)
             .catch( (err) => {
               return err;
