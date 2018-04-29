@@ -84,7 +84,8 @@ router.post('/folders', (req, res, next) => {
     .from('folders')
     .returning(['id', 'name'])
     .then( (results) => {
-      res.status(201).json(results[0]);
+      const result = results[0];
+      res.location(`${req.originalUrl}/${result.id}`).status(201).json(result);
     })
     .catch( (err) => {
       next(err);

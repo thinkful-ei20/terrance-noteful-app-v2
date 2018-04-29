@@ -390,6 +390,110 @@ describe('Noteful App', function () {
 
   });
 
+  describe('POST /api/folders', function () {
+
+    it('should create and return a new item when provided valid data', function () {
+
+      const newItem = {
+        'name': 'This is a test'
+      };
+
+      let body;
+      return chai.request(app)
+        .post('/api/folders')
+        .send(newItem)
+        .then(function (res) {
+          body = res.body;
+          expect(res).to.have.status(201);
+          expect(res).to.be.json;
+          expect(res.body).to.be.a('object');
+          expect(res.body).to.include.keys('id', 'name');
+          expect(res).to.have.header('location');
+          return knex.select().from('folders').where('id', body.id);
+        })
+        .then( ([data]) => {
+          expect(body.name).to.equal(data.name);
+          expect(body.id).to.equal(data.id);
+        });
+    });
+
+    it('should return an error when missing "name" field', function () {
+      const newItem = {
+        'foo': 'bar'
+      };
+      return chai.request(app)
+        .post('/api/folders')
+        .send(newItem)
+        .then( (res) => {
+          expect(res).to.have.status(400);
+          expect(res).to.be.json;
+          expect(res.body).to.be.a('object');
+          expect(res.body.message).to.equal('Missing `name` in request body');
+          return knex('folders')
+            .insert(newItem)
+            .catch( (err) => {
+              return err;
+            });
+        })
+        .then( (err) => {
+          expect(err).to.include({name: 'error'});
+        });
+    });
+
+  });
+
+  describe('POST /api/tags', function () {
+
+    it('should create and return a new item when provided valid data', function () {
+
+      const newItem = {
+        'name': 'This is a test'
+      };
+
+      let body;
+      return chai.request(app)
+        .post('/api/tags')
+        .send(newItem)
+        .then(function (res) {
+          body = res.body;
+          expect(res).to.have.status(201);
+          expect(res).to.be.json;
+          expect(res.body).to.be.a('object');
+          expect(res.body).to.include.keys('id', 'name');
+          expect(res).to.have.header('location');
+          return knex.select().from('tags').where('id', body.id);
+        })
+        .then( ([data]) => {
+          expect(body.name).to.equal(data.name);
+          expect(body.id).to.equal(data.id);
+        });
+    });
+
+    it('should return an error when missing "name" field', function () {
+      const newItem = {
+        'foo': 'bar'
+      };
+      return chai.request(app)
+        .post('/api/tags')
+        .send(newItem)
+        .then( (res) => {
+          expect(res).to.have.status(400);
+          expect(res).to.be.json;
+          expect(res.body).to.be.a('object');
+          expect(res.body.message).to.equal('Missing `name` in request body');
+          return knex('tags')
+            .insert(newItem)
+            .catch( (err) => {
+              return err;
+            });
+        })
+        .then( (err) => {
+          expect(err).to.include({name: 'error'});
+        });
+    });
+
+  });
+
   describe('PUT /api/notes/:id', function () {
 
     it('should update the note', function () {
