@@ -510,7 +510,7 @@ describe('Noteful App', function () {
           body = res.body;
           expect(res).to.have.status(200);
           expect(res).to.be.json;
-          expect(res.body).to.be.a('object');
+          expect(res.body).to.be.an('object');
           expect(res.body).to.include.keys('id', 'title', 'content');
           expect(res.body.id).to.equal(id);
           expect(res.body.title).to.equal(updateItem.title);
@@ -580,7 +580,7 @@ describe('Noteful App', function () {
           body = res.body;
           expect(res).to.have.status(200);
           expect(res).to.be.json;
-          expect(res.body).to.be.a('object');
+          expect(res.body).to.be.an('object');
           expect(res.body).to.include.keys('id', 'name');
           expect(res.body.id).to.equal(id);
           expect(res.body.title).to.equal(updateItem.title);
@@ -634,6 +634,75 @@ describe('Noteful App', function () {
 
   });
 
+  describe('PUT /api/tags/:id', function () {
+
+    it('should update the tag', function () {
+      let id = 2;
+      const updateItem = {
+        'name': 'this is a new tag name'
+      };
+      let body;
+      return chai.request(app)
+        .put(`/api/tags/${id}`)
+        .send(updateItem)
+        .then(res => {
+          body = res.body;
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body).to.be.an('object');
+          expect(res.body).to.include.keys('id', 'name');
+          expect(res.body.id).to.equal(id);
+          expect(res.body.title).to.equal(updateItem.title);
+          expect(res.body.content).to.equal(updateItem.content);
+          return knex('tags').where({'tags.id': res.body.id});
+        })
+        .then(([res])=> {
+          expect(res.title).to.equal(body.title);
+          expect(res.content).to.equal(body.content);
+        });
+    });
+
+    it('should respond with a 404 for an invalid id', function () {
+      const updateItem = {
+        'name': 'new tag name'
+      };
+      return chai.request(app)
+        .put('/DOES/NOT/EXIST')
+        .send(updateItem)
+        .then(res => {
+          expect(res).to.have.status(404);
+          return knex.update(updateItem).from('tags').where('id', '999999999');
+        })
+        .then( (count) => {
+          expect(count).to.equal(0);
+        });
+    });
+
+    it('should return an error when missing "name" field', function () {
+      const updateItem = {
+        'foo': 'bar'
+      };
+      return chai.request(app)
+        .put('/api/tags/2')
+        .send(updateItem)
+        .then(res => {
+          expect(res).to.have.status(400);
+          expect(res).to.be.json;
+          expect(res.body).to.be.an('object');
+          expect(res.body.message).to.equal('Missing `name` in request body');
+          return knex('tags')
+            .insert(updateItem)
+            .catch( (err) => {
+              return err;
+            });
+        })
+        .then( (err) => {
+          expect(err).to.include({name: 'error'});
+        });
+    });
+
+  });
+
   describe('DELETE  /api/notes/:id', function () {
 
     it('should delete an item by id', function () {
@@ -644,6 +713,40 @@ describe('Noteful App', function () {
           expect(res).to.have.status(204);
           return knex('notes').select()
             .where('id', 1005);
+        })
+        .then( (result) => {
+          expect(result).to.have.length(0);
+        });
+    });
+  });
+
+  describe('DELETE  /api/folders/:id', function () {
+
+    it('should delete a folder by id', function () {
+
+      return chai.request(app)
+        .delete('/api/folders/100')
+        .then( (res) => {
+          expect(res).to.have.status(204);
+          return knex('folders').select()
+            .where('id', 100);
+        })
+        .then( (result) => {
+          expect(result).to.have.length(0);
+        });
+    });
+  });
+
+  describe('DELETE  /api/tags/:id', function () {
+
+    it('should delete a tag by id', function () {
+
+      return chai.request(app)
+        .delete('/api/tags/100')
+        .then( (res) => {
+          expect(res).to.have.status(204);
+          return knex('tags').select()
+            .where('id', 100);
         })
         .then( (result) => {
           expect(result).to.have.length(0);
