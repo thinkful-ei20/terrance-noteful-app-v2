@@ -18,4 +18,4 @@ module.exports = {
   }
 };
 
-// set TEST_DATABASE_URL=postgres://dev:myPrivatePassword@localhost/noteful-test
+//set TEST_DATABASE_URL=postgres://dev:myPrivatePassword@localhost/noteful-test
